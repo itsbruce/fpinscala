@@ -75,6 +75,7 @@ object List {
   def length[A](as: List[A]): Int = foldRight(as, 0)((_, n) => n + 1)
 
   // Exercise 3.10
+  @annotation.tailrec
   def foldLeft[A,B](as: List[A], z: B)(f: (B, A) => B): B = as match {
     case Nil => z
     case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
@@ -89,5 +90,9 @@ object List {
 
   // Exercise 3.12
   def reverse[A](as: List[A]): List[A] = foldLeft(as, Nil: List[A])((xs, x) => Cons(x, xs))
+
+  // Exercise 3.14
+  def append[A](a1: List[A], a2: List[A]): List[A] = 
+    foldLeft(a1, identity[List[A]] _)((f, a) => f compose (Cons(a, _))) (a2)
 
 }
