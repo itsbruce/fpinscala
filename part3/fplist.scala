@@ -95,4 +95,8 @@ object List {
   def append[A](a1: List[A], a2: List[A]): List[A] = 
     foldLeft(a1, identity[List[A]] _)((f, a) => f compose (Cons(a, _))) (a2)
 
+  // Exercise 3.15
+  def flatten[A](xs: List[List[A]]): List[A] =
+    foldLeft(xs, identity[List[A]] _)((f, a) => f compose (append(a, _))) (Nil)
+
 }
