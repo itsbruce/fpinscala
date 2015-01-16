@@ -137,9 +137,10 @@ object List {
 
   // Exercise 3.23
   def zipWith[A,B,C](as: List[A], bs: List[B])(f: (A, B) => C): List[C] = {
+    @annotation.tailrec
     def go(xs: List[A], ys: List[B], g: List[C] => List[C], n: Int): List[C] =
       (n, xs, ys) match {
-        case (_, Cons(x, xt), Cons(y, yt)) if n != 0 =>
+        case (_, Cons(x, xt), Cons(y, yt)) if n > 0 =>
           go(xt, yt, g compose (Cons(f(x, y), _)), n - 1)
         case (_, _, _) => g(Nil)
       }
