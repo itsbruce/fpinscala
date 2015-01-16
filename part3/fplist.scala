@@ -1,4 +1,4 @@
-package fpinscala.datastructures
+//package fpinscala.datastructures
 
 sealed trait List[+A]
 case object Nil extends List[Nothing]
@@ -123,4 +123,27 @@ object List {
   // Exercise 3.20
   def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] =
     foldr(as, List[B]())((a, bs) => append(f(a), bs))
+
+  // Exercise 3.21
+  def filtr[A](as: List[A])(f: A => Boolean) =
+    flatMap(as)(a => if (f(a)) List(a) else Nil)
+
+  // Exercise 3.22
+  def addTogether(a1: List[Int], a2: List[Int]): List[Int] = {
+    val (xs, ys) = if (size(a1) < size(a2)) (a1, a2) else (a2, a1)
+    (foldLeft(xs, (identity[List[Int]] _, ys)) {case ((f, Cons(b, bs)), a) =>
+      (f compose (Cons(a + b, _)), bs)})._1 (Nil)
+  }
+
+  // Exercise 3.23
+  def zipWith[A,B,C](as: List[A], bs: List[B])(f: (A, B) => C): List[C] = {
+    def go(xs: List[A], ys: List[B], g: List[C] => List[C], n: Int): List[C] =
+      (n, xs, ys) match {
+        case (_, Cons(x, xt), Cons(y, yt)) if n != 0 =>
+          go(xt, yt, g compose (Cons(f(x, y), _)), n - 1)
+        case (_, _, _) => g(Nil)
+      }
+    go(as, bs, identity, Math.min(size(as), size(bs)))
+  }
+
 }
