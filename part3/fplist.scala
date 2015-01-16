@@ -103,4 +103,24 @@ object List {
   def flatten[A](xs: List[List[A]]): List[A] =
     foldLeft(xs, identity[List[A]] _)((f, a) => f compose (append(a, _))) (Nil)
 
+  // Exercise 3.16
+  def plusOne(xs: List[Int]): List[Int] =
+    foldr(xs, List[Int]())((x, ys) => Cons(x + 1, ys))
+
+  // Exercise 3.17
+  def dToString(xs: List[Double]): List[String] =
+    foldr(xs, List[String]())((x, ys) => Cons(x.toString, ys))
+
+  // Exercise 3.18
+  def map[A,B](as: List[A])(f: A => B): List[B] =
+    foldr(as, List[B]())((a, bs) => Cons(f(a), bs))
+
+  // Exercise 3.19
+  def filter[A](as: List[A])(f: A => Boolean) =
+    foldr(as, List[A]())((a, bs) => if (f(a)) Cons(a, bs) else bs)
+    // List.filter(List(1,2,3,4)) (_ % 2 == 0)
+
+  // Exercise 3.20
+  def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] =
+    foldr(as, List[B]())((a, bs) => append(f(a), bs))
 }
