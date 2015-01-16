@@ -91,6 +91,10 @@ object List {
   // Exercise 3.12
   def reverse[A](as: List[A]): List[A] = foldLeft(as, Nil: List[A])((xs, x) => Cons(x, xs))
 
+  // Exercise 3.13
+  def foldr[A,B](as: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft[A,B => B](as, identity)((g, a) => g compose (f(a, _: B))) (z)
+
   // Exercise 3.14
   def append[A](a1: List[A], a2: List[A]): List[A] = 
     foldLeft(a1, identity[List[A]] _)((f, a) => f compose (Cons(a, _))) (a2)
