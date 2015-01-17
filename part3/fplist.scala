@@ -142,9 +142,28 @@ object List {
       (n, xs, ys) match {
         case (_, Cons(x, xt), Cons(y, yt)) if n > 0 =>
           go(xt, yt, g compose (Cons(f(x, y), _)), n - 1)
-        case (_, _, _) => g(Nil)
+        case _ => g(Nil)
       }
     go(as, bs, identity, Math.min(size(as), size(bs)))
+  }
+
+  // Exercise 3.24
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    def matchSub(xs: List[A], ys: List[A]): Option[Boolean] = (xs, ys) match {
+      case (Nil, _) => None
+      case (_, Nil) => Some(true)
+      case (Cons(x, xt), Cons(y, yt)) if x == y => matchSub(xt, yt)
+      case _ => Some(false)
+    }
+    (sup, sub) match {
+      case (_, Nil) => true
+      case (Nil, _) => false
+      case (Cons(x, xs), _) => matchSub(sup, sub) match {
+        case None => false
+        case Some(true) => true
+        case _ => hasSubsequence(xs, sub)
+      }
+    }
   }
 
 }
