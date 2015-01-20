@@ -12,7 +12,11 @@ sealed trait Option[+A] {
   def orElse[B >:A](ob: => Option[B]): Option[B] =
     this map (Some(_)) getOrElse ob
   def filter(f: A => Boolean): Option[A] =
+    /*I did filter before flatMap
     if (this map f getOrElse false) this else None
+     *But using flatMap is more common.
+     */
+    this flatMap (a => if (f(a)) this else None)
 }
 case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
