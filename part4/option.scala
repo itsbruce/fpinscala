@@ -21,10 +21,17 @@ sealed trait Option[+A] {
 case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
 
-// Exercise 4.2
-def variance(xs: Seq[Double]): Option[Double] = {
-  val n = xs.size
-  (if (n > 0) Some(xs.head) else None) flatMap
-    (x => Some(xs.tail.foldLeft(x)(_ + _) / n)) flatMap
-      (m => Some(xs.foldLeft(0.0)((sum, x) => sum + Math.pow(x - m, 2)) / n))
+object Option {
+  // Exercise 4.2
+  def variance(xs: Seq[Double]): Option[Double] = {
+    val n = xs.size
+    (if (n > 0) Some(xs.head) else None) flatMap
+      (x => Some(xs.tail.foldLeft(x)(_ + _) / n)) map
+        (m => xs.foldLeft(0.0)((sum, x) => sum + Math.pow(x - m, 2)) / n)
+  }
+
+  // Exercise 4.3
+  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    a flatMap (x => b map (f(x, _)))
+
 }
