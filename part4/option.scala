@@ -4,7 +4,7 @@ sealed trait Option[+A] {
     case Some(a) => Some(f(a))
     case _ => None
   }
-  //def flatMap[B](f: A => Option[B]): Option[B]
+  def flatMap[B](f: A => Option[B]): Option[B] = this map f getOrElse None
   def getOrElse[B >: A](default: => B): B = this match {
     case Some(a) => a
     case _ => default
@@ -14,6 +14,4 @@ sealed trait Option[+A] {
     if (this map f getOrElse false) this else None
 }
 case class Some[+A](get: A) extends Option[A]
-// Exercise work
 case object None extends Option[Nothing]
-// Exercise work
