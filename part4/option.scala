@@ -34,10 +34,18 @@ object Option {
   def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
     a flatMap (x => b map (f(x, _)))
 
-  // Exercise 4.4
+  /* Exercise 4.4.
+   * Stops as soon as None is found, but is not stack safe
+   */
   def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
     case x :: xs => map2(x, sequence(xs))(_ :: _)
     case Nil => Some(Nil)
   }
+
+  /* foldRight implementation.  Traverses entire list no matter where None may
+   * be.  But stack safe on recent Scala versions
+   */
+  def sequenceR[A](a: List[Option[A]]): Option[List[A]] =
+    a.foldRight(Some(Nil): Option[List[A]])((x, oxs) => map2(x, oxs)(_ :: _))
 
 }
