@@ -18,7 +18,7 @@ sealed trait Option[+A] {
      */
     this flatMap (a => if (f(a)) this else None)
 }
-case class Some[+A](get: A) extends Option[A]
+final case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
 
 object Option {
