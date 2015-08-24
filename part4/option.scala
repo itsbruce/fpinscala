@@ -20,12 +20,10 @@ sealed trait Option[+A] {
     case _ => this
   }
 
-  def filter(f: A => Boolean): Option[A] =
-    /*I did filter before flatMap
-    if (this map f getOrElse false) this else None
-     *But using flatMap is more common.
-     */
-    this flatMap (a => if (f(a)) this else None)
+  def filter(f: A => Boolean): Option[A] = this match {
+    case Some(a) if f(a) => this
+    case _ => None
+  }
 }
 final case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
