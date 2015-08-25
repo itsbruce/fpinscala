@@ -87,6 +87,6 @@ object Option {
   
   // Sequence using traverse
   def sequenceT[A](a: List[Option[A]]): Option[List[A]] = 
-    traverse(a){ identity _ }
+    traverse(a)(identity)
   
 }
