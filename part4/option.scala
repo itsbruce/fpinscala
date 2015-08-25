@@ -71,4 +71,22 @@ object Option {
     }
   go(a, Nil) map { _.reverse }
   }
+
+  /* Exercise 4.5
+   * Stack-safe and short-circuiting
+   */
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+    @annotation.tailrec
+    def go(as: List[A], bs: Option[List[B]]): Option[List[B]] = (as, bs) match {
+      case (Nil, _) => bs
+      case (_, None) => None
+      case (a :: rest, _) => go(rest, f(a) flatMap { aa => bs map { aa :: _ } })
+    }
+    go(a, Some(Nil)) map { _.reverse }
+  }
+  
+  // Sequence using traverse
+  def sequenceT[A](a: List[Option[A]]): Option[List[A]] = 
+    traverse(a){ identity _ }
+  
 }
