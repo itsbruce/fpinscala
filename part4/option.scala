@@ -49,10 +49,26 @@ object Option {
     case Nil => Some(Nil)
   }
 
+  // Using flatmap rather than map2.  Not stack-safe
+  def sequenceF[A](a: List[Option[A]]): Option[List[A]] = a match {
+    case x :: xs => x flatMap { y => sequenceF(xs) map { y :: _ } }
+    case Nil => Some(Nil)
+  }
+
   /* foldRight implementation.  Traverses entire list no matter where None may
    * be.  But stack safe on recent Scala versions
    */
   def sequenceR[A](a: List[Option[A]]): Option[List[A]] =
     a.foldRight(Some(Nil): Option[List[A]])((x, oxs) => map2(x, oxs)(_ :: _))
 
+  // Stack-safe short-circuit version
+  def sequenceSafe[A](a: List[Option[A]]): Option[List[A]] = {
+    @annotation.tailrec
+    def go(os: List[Option[A]], xs: List[A]): Option[List[A]] = os match {
+      case Nil => Some(xs)
+      case None :: _ => None
+      case Some(x) :: rest => go(rest, x :: xs)
+    }
+  go(a, Nil) map { _.reverse }
+  }
 }
