@@ -45,4 +45,18 @@ object Either {
     try Right(a)
     catch { case e: Exception => Left(e) }
 
+  // 4.7
+  def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
+    traverse(es)(identity)
+ 
+  def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] = {
+    def go(xs: List[A], bs: Either[E, List[B]]): Either[E, List[B]] =
+      (xs, bs) match {
+        case (Nil, _) => bs
+        case (_, Left(_)) => bs
+        case _ => go(xs.tail, f(xs.head) flatMap { a => bs map { a :: _ } })
+      }
+    go(as, Right(Nil)) map { _.reverse }
+  }
+
 }
