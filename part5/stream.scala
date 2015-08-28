@@ -5,6 +5,15 @@ sealed trait Stream[+A] {
     case Empty => None
     case Cons(h, t) => Some(h())
   }
+
+  // 5.1 - stack safe
+  def toList: List[A] = {
+    def go(s: Stream[A], f: List[A] => List[A]): List[A] = s match {
+      case Empty => f(Nil)
+      case Cons(h, t) => go(t(), f compose { h() :: _ })
+    }
+    go(this, identity)
+  }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
