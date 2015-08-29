@@ -17,11 +17,21 @@ sealed trait Stream[+A] {
     go(this, identity)
   }
 
-  // 5.2
+  // 5.2 - no stack safety worries because lazy
   def take(n: Int): Stream[A] = this match {
     case Empty => empty
     case Cons(h, _) if n == 1 => Cons(h, () => empty)
     case Cons(h, t) => Cons(h, () => {t().take(n - 1)})
+  }
+
+  // 5.3
+  def takeWhile(p: A => Boolean): Stream[A] = this match {
+    case Empty => empty
+    case Cons(h, t) => { 
+      // Memoization. h() should never be evaluated more than once
+      lazy val head = h()
+      if (p(head)) cons(head, t() takeWhile p) else Empty
+    }
   }
 }
 case object Empty extends Stream[Nothing]
