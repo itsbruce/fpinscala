@@ -28,11 +28,25 @@ sealed trait Stream[+A] {
   def takeWhile(p: A => Boolean): Stream[A] = this match {
     case Empty => empty
     case Cons(h, t) => { 
-      // Memoization. h() should never be evaluated more than once
+      /* Memoization. h() should never be evaluated more than once.
+       * Not necessary if *only* cons smart constructor used to
+       * create streams but Cons is a public case class and can be
+       * abused
+       */
       lazy val head = h()
       if (p(head)) cons(head, t() takeWhile p) else Empty
     }
   }
+
+  def foldRight[B](z: => B)(f: (A, => B) => B): B =
+    this match {
+      case (Cons(h,t)) => f(h(), t().foldRight(z)(f))
+      case _ => z
+    }
+
+  def exists(p: A => Boolean): Boolean = foldRight(false)
+    { (a, b) => p(a) || b }
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
