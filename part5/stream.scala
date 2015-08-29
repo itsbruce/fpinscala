@@ -28,11 +28,6 @@ sealed trait Stream[+A] {
   def takeWhile(p: A => Boolean): Stream[A] = this match {
     case Empty => empty
     case Cons(h, t) => { 
-      /* Memoization. h() should never be evaluated more than once.
-       * Not necessary if *only* cons smart constructor used to
-       * create streams but Cons is a public case class and can be
-       * abused
-       */
       lazy val head = h()
       if (p(head)) cons(head, t() takeWhile p) else Empty
     }
@@ -52,7 +47,23 @@ sealed trait Stream[+A] {
 
   // 5.5
   def takeWhileF(p: A => Boolean): Stream[A] = foldRight(empty[A])
-    { (a, b) => if (! p(a)) empty else cons(a, b) }
+    { (a, bs) => if (! p(a)) empty else cons(a, bs) }
+
+  // 5.6 - Why is this listed as *hard* ?
+  def headOptionF: Option[A] = foldRight(None: Option[A]) { (a, _) => Some(a) }
+
+  // 5.7
+  def map[B](f: A => B): Stream[B] = foldRight(empty[B])
+    { (a, bs) => cons(f(a), bs) }
+
+  def filter(p: A => Boolean): Stream[A] = foldRight(empty[A])
+    { (a, bs) => if (p(a)) cons(a, bs) else bs }
+
+  def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(empty[B])
+    { (a, bs) => f(a) append bs }
+
+  def append[B >: A](s: => Stream[B]): Stream[B] = foldRight(s)
+    { (a, bs) => cons(a, bs) }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
