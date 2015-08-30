@@ -24,6 +24,13 @@ sealed trait Stream[+A] {
     case Cons(h, t) => Cons(h, () => {t().take(n - 1)})
   }
 
+  @annotation.tailrec
+  final def drop(n: Int): Stream[A] = this match {
+    case Empty => empty
+    case _ if n < 1 => this
+    case Cons(_, t) => t().drop(n - 1)
+  }
+
   // 5.3
   def takeWhile(p: A => Boolean): Stream[A] = this match {
     case Empty => empty
