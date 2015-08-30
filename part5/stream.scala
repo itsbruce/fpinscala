@@ -71,6 +71,10 @@ sealed trait Stream[+A] {
 
   def append[B >: A](s: => Stream[B]): Stream[B] = foldRight(s)
     { (a, bs) => cons(a, bs) }
+
+  // Section 5.3 example
+  def find(p: A => Boolean): Option[A] = filter(p).headOption
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -86,5 +90,23 @@ object Stream {
 
   def apply[A](as: A*): Stream[A] = 
     if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+
+  // 5.8
+  def constant[A](a: A): Stream[A] = {
+    lazy val c: Stream[A] = cons(a, c)
+    c
+  }
+
+  // 5.9
+  def from(n: Int): Stream[Int] = cons(n, from(n + 1))
+
+  // 5.10
+  def fibs: Stream[Long] = {
+    def fibSum(a: Long, b: Long): Stream[Long] = {
+      val ab = a + b
+      cons(ab, fibSum(b, ab))
+    }
+    cons(0, cons(1, fibSum(0, 1)))
+  }
 
 }
