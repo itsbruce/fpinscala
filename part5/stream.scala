@@ -109,4 +109,17 @@ object Stream {
     cons(0, cons(1, fibSum(0, 1)))
   }
 
+  // 5.11
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+    f(z) map { case (a, s) => cons(a, unfold(s)(f)) } getOrElse empty
+
+  // 5.12
+  def fibsU: Stream[Long] = unfold(0, 1){case (x, y) => Some(x, (y, x + y))}
+
+  def fromU(n: Int): Stream[Int] = unfold(n){x => Some(x, x + 1)}
+
+  def constantU[A](a: A): Stream[A] = unfold(a){x => Some(x, x)}
+
+  def onesU: Stream[Int] = unfold(1){ _ => Some(1, 1) }
+
 }
