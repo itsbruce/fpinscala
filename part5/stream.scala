@@ -81,17 +81,27 @@ sealed trait Stream[+A] {
     case Cons(h, t) => Some(f(h()), t())
   }
 
-  def takeU(n: Int): Stream[A] = unfold(this, n) { s: (Stream[A], Int) =>
-    s match {
+  def takeU(n: Int): Stream[A] = unfold(this, n) {
       case (Cons(h, t), i) if i > 0 => Some((h(), (t(), i - 1)))
       case _ => None
-    }
   }
 
   def takeWhileU(p: A => Boolean): Stream[A] = unfold(this) {
     case Cons(h, t) if p(h()) => Some(h(), t())
     case _ => None
   }
+
+  def zipWith[B,C](that: Stream[B])(f: (A, B) => C): Stream[C] =
+    unfold(this, that) {
+      case (Cons(ha, ta), Cons(hb, tb)) => Some((f(ha(), hb()), (ta(), tb())))
+      case _ => None
+    }
+
+  def zipAll[B](that: Stream[B]): Stream[(Option[A],Option[B])] =
+    unfold(this, that) {
+      case (Empty, Empty) => None
+      case (as, bs) => Some((as.headOption, bs.headOption), (as.drop(1), bs.drop(1)))
+    }
 
 }
 case object Empty extends Stream[Nothing]
