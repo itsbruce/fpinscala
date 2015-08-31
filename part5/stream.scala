@@ -75,6 +75,24 @@ sealed trait Stream[+A] {
   // Section 5.3 example
   def find(p: A => Boolean): Option[A] = filter(p).headOption
 
+  // Section 5.13
+  def mapU[B](f: A => B): Stream[B] = unfold(this) {
+    case Empty => None
+    case Cons(h, t) => Some(f(h()), t())
+  }
+
+  def takeU(n: Int): Stream[A] = unfold(this, n) { s: (Stream[A], Int) =>
+    s match {
+      case (Cons(h, t), i) if i > 0 => Some((h(), (t(), i - 1)))
+      case _ => None
+    }
+  }
+
+  def takeWhileU(p: A => Boolean): Stream[A] = unfold(this) {
+    case Cons(h, t) if p(h()) => Some(h(), t())
+    case _ => None
+  }
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
