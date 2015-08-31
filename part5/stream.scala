@@ -103,6 +103,21 @@ sealed trait Stream[+A] {
       case (as, bs) => Some((as.headOption, bs.headOption), (as.drop(1), bs.drop(1)))
     }
 
+  // 5.14
+  def startsWith[A](that: Stream[A]): Boolean = this.zipAll(that).forAll {
+    case (Some(x), Some(y)) => x == y
+    case (Some(_), None) => true
+    case _ => false
+  }
+
+  // 5.15
+  def tails: Stream[Stream[A]] = unfold(this) {
+    case Empty => None
+    case s  => Some(s, s drop 1)
+  }
+
+  def hasSubsequence[A](s: Stream[A]) = tails exists { _ startsWith s }
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
