@@ -154,4 +154,10 @@ object State {
     _ <- set(f(s))
   } yield ()
 
+  sealed trait Input
+  case object Coin extends Input
+  case object Turn extends Input
+
+  case class Machine(locked: Boolean, candles: Int, coins: Int)
+
 }
