@@ -119,3 +119,11 @@ object RNG {
     flatMap(ra){a => mapF(rb)(b => f(a, b))}
 
 }
+
+case class State[S, +A](run: S => (A, S)) {
+}
+
+object State {
+  type Rand[A] = State[RNG, A]
+
+}
