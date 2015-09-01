@@ -60,4 +60,36 @@ object RNG {
    go(count, Nil, rng)
  }
 
+  type Rand[+A] = RNG => (A, RNG)
+
+  val int: Rand[Int] = _.nextInt
+
+  def unit[A](a: A): Rand[A] = rng => (a, rng)
+
+  def map[A,B](s: Rand[A])(f: A => B): Rand[B] = rng => {
+      val (a, rng2) = s(rng)
+      (f(a), rng2)
+  }
+
+  def nonNegativeEven: Rand[Int] =
+    map(nonNegativeInt)(i => i - i % 2)
+
+  // 6.5
+  def randDouble: Rand[Double] = map(nonNegativeInt)
+    {_ / (Int.MaxValue.toDouble + 1)}
+
+  // 6.6
+  def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
+      val (a, rngA) = ra(rng)
+      val (b, rngB) = rb(rngA)
+      (f(a, b), rngB)
+  }
+
+  def both[A,B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
+    map2(ra, rb)((_, _))
+
+  def randIntDouble: Rand[(Int, Double)] = both(int, double)
+
+  def randDoubleInt: Rand[(Double, Int)] = both(double, int)
+
 }
