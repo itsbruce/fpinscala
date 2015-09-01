@@ -92,4 +92,10 @@ object RNG {
 
   def randDoubleInt: Rand[(Double, Int)] = both(double, int)
 
+  // 6.7
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List[A]())){ (r, rs) => map2(r, rs)(_ :: _) }
+
+  def randInts(count: Int): Rand[List[Int]] = sequence(List.fill(count)(int))
+
 }
