@@ -156,6 +156,7 @@ object State {
 
 }
 
+// Problem 6.11
 object Candy {
   import State._
 
@@ -163,34 +164,43 @@ object Candy {
   case object Coin extends Input
   case object Turn extends Input
 
-  // Public interface to the machine
+  /* Public interface to the machine.  I have modified the case class
+   * slightly from the example in problem 6.11 to make it more robust
+   * and to simplify Input processing - polymorphism beats pattern
+   * atching in this case.  The problem itself is not changed.  Note
+   * "locked" is not used in my solution but would be necessary in 
+   * general usage and is there in the example so it stays
+   */
   sealed trait Machine {
     val candies: Int
     val coins: Int
-    def isLocked: Boolean
+    def locked: Boolean
     def input(i: Input): Machine
   }
   /* Private machine methods, hidden to prevent unsafe
    * operations
    */
   private sealed trait MachineOps extends Machine {
-    final def input(i: Input): Machine = i match {
-      case Coin => addCoin
-      case Turn => turnKnob
-    }
+    final def input(i: Input): Machine = 
+      if (candies < 1) this
+      else i match {
+        case Coin => addCoin
+        case Turn => turnKnob
+      }
     def addCoin: Machine = this
     def turnKnob: Machine = this
   }
   /* Case classes kept private to prevent initialisation with
    * invalid state (e.g. negative numbers of candies or coins)
+   * and because I don't like ADT type constructors leaking where
+   * it can be avoided
    */
   private case class Locked(candies: Int, coins: Int) extends MachineOps {
-    def isLocked = true
-    override def addCoin: Machine =
-      if (candies > 0) Unlocked(candies, coins + 1) else this
+    def locked = true
+    override def addCoin: Machine = Unlocked(candies, coins + 1)
   }
   private case class Unlocked(candies: Int, coins: Int) extends MachineOps {
-    def isLocked = false
+    def locked = false
     override def turnKnob: Machine = Locked(candies - 1, coins)
   }
 
@@ -200,7 +210,7 @@ object Candy {
       Locked(math.max(0, candies), math.max(0, coins))
     // For pattern matching
     def unapply(m: Machine): Option[(Boolean,Int,Int)] =
-      Some(m.isLocked, m.candies, m.coins)
+      Some(m.locked, m.candies, m.coins)
 
   }
 
