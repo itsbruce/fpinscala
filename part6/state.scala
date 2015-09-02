@@ -163,11 +163,16 @@ object Candy {
   case object Coin extends Input
   case object Turn extends Input
 
+  // Public interface to the machine
   sealed trait Machine {
     val candies: Int
     val coins: Int
+    def isLocked: Boolean
     def input(i: Input): Machine
   }
+  /* Private machine methods, hidden to prevent unsafe
+   * operations
+   */
   private sealed trait MachineOps extends Machine {
     def input(i: Input): Machine = i match {
       case Coin => addCoin
@@ -176,20 +181,31 @@ object Candy {
     def addCoin: Machine = this
     def turnKnob: Machine = this
   }
+  /* Case classes kept private to prevent initialisation with
+   * invalid state (e.g. negative numbers of candies or coins)
+   */
   private case class Locked(candies: Int, coins: Int) extends MachineOps {
+    def isLocked = true
     override def addCoin: Machine =
       if (candies > 0) Unlocked(candies, coins + 1) else this
   }
   private case class Unlocked(candies: Int, coins: Int) extends MachineOps {
+    def isLocked = false
     override def turnKnob: Machine = Locked(candies - 1, coins)
   }
 
   object Machine {
+    // Caller can only create valid, locked machines
     def apply(candies: Int, coins: Int): Machine =
       Locked(math.max(0, candies), math.max(0, coins))
-
+    // For pattern matching
     def unapply(m: Machine): Option[(Int,Int)] = Some(m.candies, m.coins)
 
   }
+
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
+    _ <- sequence(inputs map { i => modify[Machine](_.input(i)) })
+    m <- get
+  } yield (m.coins, m.candies)
 
 }
