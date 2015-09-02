@@ -174,7 +174,7 @@ object Candy {
    * operations
    */
   private sealed trait MachineOps extends Machine {
-    def input(i: Input): Machine = i match {
+    final def input(i: Input): Machine = i match {
       case Coin => addCoin
       case Turn => turnKnob
     }
@@ -199,7 +199,8 @@ object Candy {
     def apply(candies: Int, coins: Int): Machine =
       Locked(math.max(0, candies), math.max(0, coins))
     // For pattern matching
-    def unapply(m: Machine): Option[(Int,Int)] = Some(m.candies, m.coins)
+    def unapply(m: Machine): Option[(Boolean,Int,Int)] =
+      Some(m.isLocked, m.candies, m.coins)
 
   }
 
