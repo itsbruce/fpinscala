@@ -167,7 +167,7 @@ object Candy {
   /* Public interface to the machine.  I have modified the case class
    * slightly from the example in problem 6.11 to make it more robust
    * and to simplify Input processing - polymorphism beats pattern
-   * atching in this case.  The problem itself is not changed.  Note
+   * matching in this case.  The problem itself is not changed.  Note
    * "locked" is not used in my solution but would be necessary in 
    * general usage and is there in the example so it stays
    */
@@ -177,8 +177,8 @@ object Candy {
     def locked: Boolean
     def input(i: Input): Machine
   }
-  /* Private machine methods, hidden to prevent unsafe
-   * operations
+  /* Private machine methods, hidden to prevent unsafe operations.
+   * sealed is probably redundant given private, I guess
    */
   private sealed trait MachineOps extends Machine {
     final def input(i: Input): Machine = 
@@ -187,8 +187,8 @@ object Candy {
         case Coin => addCoin
         case Turn => turnKnob
       }
-    def addCoin: Machine = this
-    def turnKnob: Machine = this
+    def addCoin: Machine
+    def turnKnob: Machine
   }
   /* Case classes kept private to prevent initialisation with
    * invalid state (e.g. negative numbers of candies or coins)
@@ -197,18 +197,23 @@ object Candy {
    */
   private case class Locked(candies: Int, coins: Int) extends MachineOps {
     def locked = true
-    override def addCoin: Machine = Unlocked(candies, coins + 1)
+    def addCoin: Machine = Unlocked(candies, coins + 1)
+    def turnKnob: Machine = this
   }
   private case class Unlocked(candies: Int, coins: Int) extends MachineOps {
     def locked = false
-    override def turnKnob: Machine = Locked(candies - 1, coins)
+    def addCoin: Machine = this
+    def turnKnob: Machine = Locked(candies - 1, coins)
   }
 
   object Machine {
-    // Caller can only create valid, locked machines
+    /* Caller can only create valid, locked machines.  Possibly
+     * an exception for negative candies/coins would be more
+     * appropriate for anything other than an exercise
+     */
     def apply(candies: Int, coins: Int): Machine =
       Locked(math.max(0, candies), math.max(0, coins))
-    // For pattern matching
+    // Pattern matching
     def unapply(m: Machine): Option[(Boolean,Int,Int)] =
       Some(m.locked, m.candies, m.coins)
 
