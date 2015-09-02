@@ -154,10 +154,42 @@ object State {
     _ <- set(f(s))
   } yield ()
 
+}
+
+object Candy {
+  import State._
+
   sealed trait Input
   case object Coin extends Input
   case object Turn extends Input
 
-  case class Machine(locked: Boolean, candles: Int, coins: Int)
+  sealed trait Machine {
+    val candies: Int
+    val coins: Int
+    def input(i: Input): Machine
+  }
+  private sealed trait MachineOps extends Machine {
+    def input(i: Input): Machine = i match {
+      case Coin => addCoin
+      case Turn => turnKnob
+    }
+    def addCoin: Machine = this
+    def turnKnob: Machine = this
+  }
+  private case class Locked(candies: Int, coins: Int) extends MachineOps {
+    override def addCoin: Machine =
+      if (candies > 0) Unlocked(candies, coins + 1) else this
+  }
+  private case class Unlocked(candies: Int, coins: Int) extends MachineOps {
+    override def turnKnob: Machine = Locked(candies - 1, coins)
+  }
+
+  object Machine {
+    def apply(candies: Int, coins: Int): Machine =
+      Locked(math.max(0, candies), math.max(0, coins))
+
+    def unapply(m: Machine): Option[(Int,Int)] = Some(m.candies, m.coins)
+
+  }
 
 }
